@@ -6,19 +6,21 @@ const libre = require('libreoffice-convert');
 const fs = require('fs');
 const path = require('path');
 const { createReport } = require('docx-templates');
+const { convert } = require('html-to-text');
 
 app.use('/download', express.static(__dirname + "/tmp"));
 app.use(cors());
 app.use(express.json());
 
 app.post('/', async (req, res) => {    
-    const { fullname, tagline, about, contact, avatar, skills, educations, experiences } = req.body;
-    const { phone, address, email, website } = contact;   
+    var { basics, work, education,  achievements, languages, skills, references, picture } = req.body;
+    var { name, titreCv, profiles, email, phone, website, location } = basics;
+    var { address } = location;
 
     try { 
         // generate doc
         var randomCharacters = nanoid(10);        
-        var user_avatar = avatar.replace(/^data:image\/\w+;base64,/, "");
+        var user_avatar = picture.replace(/^data:image\/\w+;base64,/, "");
         var buf = Buffer.from(user_avatar, 'base64');
         fs.writeFileSync(`./tmp/${randomCharacters}.png`, buf);
         
@@ -27,17 +29,16 @@ app.post('/', async (req, res) => {
         const buffer = await createReport({
             template,
             data: {
-                fullname: fullname,
-                tagline,
-                about: about,
-                avatar,
-                phone,
-                address,
+                name, 
+                titreCv,
+                profiles: profiles,
                 email,
+                phone,
                 website,
-                skills,    
-                educations,                          
-                experiences
+                address,
+                skills,
+                education,
+                work
             },
             additionalJsContext: {
                 injectSvg: () => {
@@ -52,27 +53,28 @@ app.post('/', async (req, res) => {
                     };
                     return { width: 2.5, height: 2.5, data: svg_data, extension: '.svg', thumbnail };                                                    
                 }
-            }      
+            },
+            processLineBreaks: true      
           });
           
         fs.writeFileSync(`./tmp/${randomCharacters}.docx`, buffer);
 
+        // converting doc to pdf libreoffice for ubuntu
 
-        //  converting doc to pdf
-        const extend = '.pdf'
-        const enterPath = `./tmp/${randomCharacters}.docx`;
-        const outputPath = `./tmp/${randomCharacters}${extend}`;
+        // const extend = '.pdf'
+        // const enterPath = `./tmp/${randomCharacters}.docx`;
+        // const outputPath = `./tmp/${randomCharacters}${extend}`;
         
-        // Read file
-        const file = fs.readFileSync(enterPath);
-        // Convert it to pdf format with undefined filter (see Libreoffice doc about filter)
-        libre.convert(file, extend, undefined, (err, done) => {
-            if (err) {
-                console.log(`Error converting file: ${err}`);
-            }            
-            // Here in done you have pdf file which you can save or transfer in another stream
-            fs.writeFileSync(outputPath, done);
-        });
+        // // Read file
+        // const file = fs.readFileSync(enterPath);
+        // // Convert it to pdf format with undefined filter (see Libreoffice doc about filter)
+        // libre.convert(file, extend, undefined, (err, done) => {
+        //     if (err) {
+        //         console.log(`Error converting file: ${err}`);
+        //     }            
+        //     // Here in done you have pdf file which you can save or transfer in another stream
+        //     fs.writeFileSync(outputPath, done);
+        // });
     }
     catch(err) { 
         console.log(err);
@@ -84,8 +86,8 @@ app.post('/', async (req, res) => {
     res.json({
         success: true,
         download: {
-            doc: `http://173.230.130.56:3000/download/${randomCharacters}.docx`,
-            pdf: `http://173.230.130.56:3000/download/${randomCharacters}.pdf`
+            doc: `http://173.230.130.56:3000/download/${randomCharacters}.docx`
+            // pdf: `http://173.230.130.56:3000/download/${randomCharacters}.pdf`
         }
     });    
 });
