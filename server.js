@@ -84,8 +84,8 @@ app.post('/', async (req, res) => {
     res.json({
         success: true,
         download: {
-            doc: `http://localhost:3000/download/${randomCharacters}.docx`,
-            doc: `http://localhost:3000/download/${randomCharacters}.pdf`
+            doc: `http://173.230.130.56:3000/download/${randomCharacters}.docx`,
+            pdf: `http://173.230.130.56:3000/download/${randomCharacters}.pdf`
         }
     });    
 });
