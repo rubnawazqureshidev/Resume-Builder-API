@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { createReport } = require('docx-templates');
 const { convert } = require('html-to-text');
+const os = require('os');
 
 app.use('/download', express.static(__dirname + "/tmp"));
 app.use(cors());
@@ -20,11 +21,8 @@ app.post('/', async (req, res) => {
     try { 
         // generate doc
         var randomCharacters = nanoid(10);        
-        var user_avatar = picture.replace(/^data:image\/\w+;base64,/, "");
-        var buf = Buffer.from(user_avatar, 'base64');
-        fs.writeFileSync(`./tmp/${randomCharacters}.png`, buf);
-        
-        const template  = fs.readFileSync('./template1.docx');    
+        var user_avatar = picture.replace(/^data:image\/\w+;base64,/, "");        
+        const template  = fs.readFileSync(__dirname +'/template2.docx');    
 
         const buffer = await createReport({
             template,
@@ -38,26 +36,18 @@ app.post('/', async (req, res) => {
                 address,
                 skills,
                 education,
-                work
+                work,
+                languages
             },
             additionalJsContext: {
-                injectSvg: () => {
-                    const svg_data = Buffer.from(`<svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-                                  <rect x="10" y="10" height="100" width="100" style="stroke:#ff0000; fill: #0000ff"/>
-                                </svg>`, 'utf-8');               
-
-                    // Providing a thumbnail is technically optional, as newer versions of Word will just ignore it.
-                    const thumbnail = {
-                        data: fs.readFileSync(`./tmp/${randomCharacters}.png`),
-                        extension: '.png',
-                    };
-                    return { width: 2.5, height: 2.5, data: svg_data, extension: '.svg', thumbnail };                                                    
+                tile: () => { 
+                    return { width: 2.5, height: 2.5, data: user_avatar, extension: '.png' };                                                    
                 }
             },
             processLineBreaks: true      
           });
           
-        fs.writeFileSync(`./tmp/${randomCharacters}.docx`, buffer);
+        fs.writeFileSync(__dirname +`/tmp/${randomCharacters}.docx`, buffer);
 
         // converting doc to pdf libreoffice for ubuntu
 
@@ -79,9 +69,6 @@ app.post('/', async (req, res) => {
     catch(err) { 
         console.log(err);
     } 
-
-
-    fs.unlinkSync(`./tmp/${randomCharacters}.png`);
 
     res.json({
         success: true,
