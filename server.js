@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 const { nanoid } = require('nanoid');
 const fs = require('fs');
+const libre = require('libreoffice-convert');
 const { createReport } = require('docx-templates');
 
 app.use('/download', express.static(__dirname + "/tmp"));
@@ -46,7 +47,24 @@ app.post('/:id', async (req, res) => {
             processLineBreaks: true      
         });
           
-        fs.writeFileSync(__dirname +`/tmp/${randomCharacters}.docx`, buffer);        
+        fs.writeFileSync(__dirname +`/tmp/${randomCharacters}.docx`, buffer);   
+
+        /* 
+            // converting doc to pdf libreoffice for ubuntu
+            const enterPath = __dirname+`/tmp/${randomCharacters}.docx`;
+            const outputPath = __dirname+`./tmp/${randomCharacters}${extend}`;
+                    
+            // Read file
+            const file = fs.readFileSync(enterPath); 
+            // Convert it to pdf format with undefined filter (see Libreoffice doc about filter)
+            libre.convert(file, ".pdf", undefined, (err, done) => {
+                if (err) {
+                    console.log(`Error converting file: ${err}`);
+                }            
+                // Here in done you have pdf file which you can save or transfer in another stream
+                fs.writeFileSync(outputPath, done);
+            });
+        */        
     }
     catch(err) { 
         console.log(err);
@@ -55,7 +73,8 @@ app.post('/:id', async (req, res) => {
     res.json({
         success: true,
         download: {
-            doc: `http://173.230.130.56:3000/download/${randomCharacters}.docx`
+            doc: `http://173.230.130.56:3000/download/${randomCharacters}.docx`,
+            // pdf: `http://173.230.130.56:3000/download/${randomCharacters}.pdf`
         }
     });    
 });
