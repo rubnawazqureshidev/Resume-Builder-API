@@ -35,7 +35,8 @@ app.post('/:id', async (req, res) => {
                 skills,
                 education,
                 work,
-                languages
+                languages,
+                references
             },
             additionalJsContext: {
                 tile: () => { 
@@ -43,9 +44,9 @@ app.post('/:id', async (req, res) => {
                 }
             },
             processLineBreaks: true      
-          });
+        });
           
-        fs.writeFileSync(__dirname +`/tmp/${randomCharacters}.docx`, buffer);      
+        fs.writeFileSync(__dirname +`/tmp/${randomCharacters}.docx`, buffer);        
     }
     catch(err) { 
         console.log(err);
