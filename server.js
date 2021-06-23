@@ -17,6 +17,18 @@ app.post('/:id', async (req, res) => {
     var { name, titreCv, profiles, email, phone, website, location } = basics;
     var { address } = location;
 
+    var profile_html = '';
+	for(var i=0; i<profiles.length; i++){
+	  	profile_html += profiles[i].description;
+	}
+
+	var work_html = '';
+		for(var i=0; i<work.length; i++){  	
+		work_html += "<p>"+work[i].jobTitle+"</p>";
+		work_html += "<p>"+work[i].startDate + " - " + work[i].endDate + "</p>";
+		work_html += work[i].description;
+	}
+
     try { 
         // generate doc
         var randomCharacters = nanoid(10);        
@@ -28,14 +40,14 @@ app.post('/:id', async (req, res) => {
             data: {
                 name, 
                 titreCv,
-                profiles: profiles,
+                profiles: profile_html,
                 email,
                 phone,
                 website,
                 address,
                 skills,
                 education,
-                work,
+                work: work_html,
                 languages,
                 references
             },
